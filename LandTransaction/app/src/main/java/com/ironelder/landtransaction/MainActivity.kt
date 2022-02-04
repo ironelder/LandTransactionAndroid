@@ -28,7 +28,7 @@ import com.ironelder.landtransaction.ui.theme.LandTransactionTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel by lazy {
-        ViewModelProvider(this).get(MainViewModel::class.java)
+        ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application)).get(MainViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity() {
 //                }
             }
         }
+        viewModel.loadCityData()
         viewModel.loadRealApartDealData()
     }
 }

@@ -1,25 +1,37 @@
 package com.ironelder.landtransaction
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.google.gson.Gson
 import com.ironelder.landtransaction.model.ApartModel
 import com.ironelder.landtransaction.model.ApartResultModel
+import com.ironelder.landtransaction.model.city.CityModel
 import fr.arnaudguyon.xmltojsonlib.XmlToJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application:Application) : AndroidViewModel(application) {
+    @SuppressLint("StaticFieldLeak")
+    private val context = getApplication<Application>().applicationContext
+
     private val apartRepository = ApartRepositoryImpl()
 
     private val _apartRealDealModel : MutableLiveData<List<ApartModel>> = MutableLiveData()
     val apartRealDealModel : LiveData<List<ApartModel>> = _apartRealDealModel
 
     val onItemClickEvent: MutableLiveData<ApartModel> = MutableLiveData()
+
+    fun loadCityData(){
+        val assetManager = context.assets
+        val inputStream = assetManager.open(DEFAULT_PATH_SIDO)
+        val cityData = inputStream.bufferedReader().use { it.readText() }
+        val cityModel = Gson().fromJson(cityData.toString(), CityModel::class.java)
+
+        Log.d("ironelderLandTest" , "return cityData = ${cityModel.toString()}")
+    }
 
     fun loadRealApartDealData() {
         viewModelScope.launch(Dispatchers.IO) {
