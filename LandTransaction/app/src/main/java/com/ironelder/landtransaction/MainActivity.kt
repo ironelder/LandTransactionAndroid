@@ -39,9 +39,11 @@ class MainActivity : ComponentActivity() {
                 viewModel.onItemClickEvent.observeAsState().value?.run { 
                     ComposableToast(message = apartName)
                 }
-                
-                TestModelList(models = apartDealModels, onItemClick = viewModel::onItemClick)
-                
+                Column {
+                    FilterDropBox()
+                    TestModelList(models = apartDealModels, onItemClick = viewModel::onItemClick)
+                }
+
                 
                 // A surface container using the 'background' color from the theme
 //                Surface(color = MaterialTheme.colors.background) {
@@ -51,6 +53,14 @@ class MainActivity : ComponentActivity() {
         }
         viewModel.loadCityData()
         viewModel.loadRealApartDealData()
+    }
+}
+
+@Composable
+fun FilterDropBox(){
+    Row(modifier = Modifier.padding(10.dp)){
+        Text(text = "시/도", modifier = Modifier.padding(end = 10.dp))
+        Text(text = "시/군/구")
     }
 }
 
