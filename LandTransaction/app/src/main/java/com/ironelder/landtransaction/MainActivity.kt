@@ -6,12 +6,17 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -89,7 +94,10 @@ fun TopFilterBar(
     onDateSelected: (date:String) -> Unit = {}
 ) {
     var dialogShow by remember { mutableStateOf(false) }
-    Row(modifier = Modifier.padding(10.dp)) {
+    Row(modifier = Modifier
+        .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && dialogShow) {
             DatePicker(onDateSelected = { localDate ->
                 val formatter = DateTimeFormatter.ofPattern("yyyy/MM")
@@ -105,13 +113,23 @@ fun TopFilterBar(
         }) {
             Text(text = dateButtonText ?: "Date")
         }
-        Spacer(modifier = Modifier.width(15.dp))
+        Spacer(modifier = Modifier.width(5.dp))
         SidoDropDownMenu(sidoList = sidoList, onItemClick = onSelectSido)
         Spacer(modifier = Modifier.width(5.dp))
         SigunguDropDownMenu(sigunguList = sigunguList, sigunguSelectModel = sigunguSelectModel, onSigunguSelecter = onSigunguSelecter)
-        Spacer(modifier = Modifier.width(15.dp))
-        Button(onClick = onSearch) {
-            Text(text = "Search")
+        Spacer(modifier = Modifier.width(5.dp))
+        IconButton(
+            onClick = onSearch,
+            modifier = Modifier
+                .border(1.dp, Color.White, shape = CircleShape)
+                .width(30.dp)
+                .height(30.dp)
+        ) {
+            Icon(
+                Icons.Filled.Search,
+                "",
+                tint = Color.White,
+            )
         }
     }
 }
