@@ -109,7 +109,7 @@ fun SidoDropDownMenu(
                 println("name = ${cityData.sido_cd}")
                 sidoDropDownText = cityData.sido_nm
                 isSidoDropDownMenuExpanded = !isSidoDropDownMenuExpanded
-                onItemClick(cityData.sigungu_li)
+                onItemClick.invoke(cityData.sigungu_li)
             }) {
                 Text(text = cityData.sido_nm)
             }
@@ -137,7 +137,7 @@ fun SigunguDropDownMenu(sigunguList: List<SigunguLi> = emptyList(),
             DropdownMenuItem(onClick = {
                 println("Test = ${sigunguLi.sigungu_cd}")
                 isSigunguDropDownMenuExpanded = false
-                onSigunguSelecter(sigunguLi)
+                onSigunguSelecter.invoke(sigunguLi)
             }) {
                 Text(text = sigunguLi.sigungu_nm)
             }
