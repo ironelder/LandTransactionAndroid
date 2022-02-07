@@ -66,17 +66,6 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
 
                     }
                 }
-                /*
-                val apartResultModel =
-                    Gson().fromJson(xmlToJson.toJson().toString(), VolunteerListModel::class.java)
-                if (apartResultModel.response.body.items.item.isNotEmpty()) {
-                    val list = apartResultModel.response.body.items.item
-                    if (list.size < 20) {
-                        isEnd = true
-                    }
-                    _volunteerDataList.postValue(list)
-                }
-                 */
             }
         }
     }
