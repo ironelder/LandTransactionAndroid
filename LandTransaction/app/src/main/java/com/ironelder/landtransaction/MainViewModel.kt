@@ -7,7 +7,9 @@ import androidx.lifecycle.*
 import com.google.gson.Gson
 import com.ironelder.landtransaction.model.ApartModel
 import com.ironelder.landtransaction.model.ApartResultModel
+import com.ironelder.landtransaction.model.city.CityData
 import com.ironelder.landtransaction.model.city.CityModel
+import com.ironelder.landtransaction.model.city.SigunguLi
 import fr.arnaudguyon.xmltojsonlib.XmlToJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +24,15 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
     private val _apartRealDealModel : MutableLiveData<List<ApartModel>> = MutableLiveData()
     val apartRealDealModel : LiveData<List<ApartModel>> = _apartRealDealModel
 
+    private val _sidoListModel : MutableLiveData<List<CityData>> = MutableLiveData()
+    val sidoListModel : LiveData<List<CityData>> = _sidoListModel
+
+    private val _sigunguListModel : MutableLiveData<List<SigunguLi>> = MutableLiveData()
+    val sigunguListModel : LiveData<List<SigunguLi>> = _sigunguListModel
+
+    private val _sigunguSelectModel : MutableLiveData<SigunguLi> = MutableLiveData()
+    val sigunguSelectModel : LiveData<SigunguLi> = _sigunguSelectModel
+
     val onItemClickEvent: MutableLiveData<ApartModel> = MutableLiveData()
 
     fun loadCityData(){
@@ -30,6 +41,9 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
         val cityData = inputStream.bufferedReader().use { it.readText() }
         val cityModel = Gson().fromJson(cityData.toString(), CityModel::class.java)
 
+        cityModel.cityDatas.cityData.let {
+            _sidoListModel.postValue(it)
+        }
         Log.d("ironelderLandTest" , "return cityData = ${cityModel.toString()}")
     }
 
@@ -71,6 +85,13 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
         _apartRealDealModel.value?.getOrNull(position)?.let { onItemClickEvent.postValue(it) }
     }
 
+    fun onSidoItemSelect(sigunguList:List<SigunguLi>){
+        _sigunguListModel.postValue(sigunguList)
+    }
+
+    fun onSigunguItemSelect(sigunguSelectItem:SigunguLi?) {
+        _sigunguSelectModel.postValue(sigunguSelectItem)
+    }
 
 }
 

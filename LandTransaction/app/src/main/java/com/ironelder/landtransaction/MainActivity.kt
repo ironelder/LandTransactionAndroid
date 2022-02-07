@@ -10,11 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,27 +21,45 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.ironelder.landtransaction.model.ApartModel
+import com.ironelder.landtransaction.model.city.CityData
+import com.ironelder.landtransaction.model.city.SigunguLi
 import com.ironelder.landtransaction.ui.theme.LandTransactionTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel by lazy {
-        ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application)).get(MainViewModel::class.java)
+        ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory(application)).get(
+            MainViewModel::class.java
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             LandTransactionTheme {
-                val apartDealModels = viewModel.apartRealDealModel.observeAsState().value ?: emptyList()
-                viewModel.onItemClickEvent.observeAsState().value?.run { 
+                val apartDealModels =
+                    viewModel.apartRealDealModel.observeAsState().value ?: emptyList()
+                val sidoModels = viewModel.sidoListModel.observeAsState().value ?: emptyList()
+                val sigunguModels = viewModel.sigunguListModel.observeAsState().value ?: emptyList()
+                val sigunguSelectModel = viewModel.sigunguSelectModel.observeAsState().value
+
+                viewModel.onItemClickEvent.observeAsState().value?.run {
                     ComposableToast(message = apartName)
                 }
                 Column {
-                    FilterDropBox()
+                    FilterDropBox(
+                        sidoList = sidoModels,
+                        onSelectSido = {
+                            viewModel.onSidoItemSelect(it)
+                            viewModel.onSigunguItemSelect(null)
+                                       },
+                        sigunguList = sigunguModels,
+                        sigunguSelectModel = sigunguSelectModel,
+                        onSigunguSelecter = { viewModel.onSigunguItemSelect(it) }
+                    )
                     TestModelList(models = apartDealModels, onItemClick = viewModel::onItemClick)
                 }
 
-                
+
                 // A surface container using the 'background' color from the theme
 //                Surface(color = MaterialTheme.colors.background) {
 //                    Greeting("Android")
@@ -57,15 +72,81 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun FilterDropBox(){
-    Row(modifier = Modifier.padding(10.dp)){
-        Text(text = "시/도", modifier = Modifier.padding(end = 10.dp))
-        Text(text = "시/군/구")
+fun FilterDropBox(
+    sidoList: List<CityData> = emptyList(),
+    onSelectSido: (sigunguList: List<SigunguLi>) -> Unit = {},
+    sigunguList: List<SigunguLi> = emptyList(),
+    sigunguSelectModel: SigunguLi? = null,
+    onSigunguSelecter: (SigunguLi) -> Unit = {}
+) {
+    Row(modifier = Modifier.padding(10.dp)) {
+        SidoDropDownMenu(sidoList = sidoList, onItemClick = onSelectSido)
+        Spacer(modifier = Modifier.width(5.dp))
+        SigunguDropDownMenu(sigunguList = sigunguList, sigunguSelectModel = sigunguSelectModel, onSigunguSelecter = onSigunguSelecter)
     }
 }
 
 @Composable
-fun TestModelList(models:List<ApartModel>, onItemClick: (Int) -> Unit = {}) {
+fun SidoDropDownMenu(
+    sidoList: List<CityData>,
+    onItemClick: (sigunguList: List<SigunguLi>) -> Unit = {}
+) {
+    var isSidoDropDownMenuExpanded by remember { mutableStateOf(false) }
+    var sidoDropDownText by remember { mutableStateOf("시/도") }
+    Button(
+        onClick = { isSidoDropDownMenuExpanded = !isSidoDropDownMenuExpanded }
+    ) {
+        Text(text = sidoDropDownText)
+    }
+
+    DropdownMenu(
+        modifier = Modifier.wrapContentSize(),
+        expanded = isSidoDropDownMenuExpanded,
+        onDismissRequest = { isSidoDropDownMenuExpanded = false }) {
+
+        sidoList.forEach { cityData ->
+            DropdownMenuItem(onClick = {
+                println("name = ${cityData.sido_cd}")
+                sidoDropDownText = cityData.sido_nm
+                isSidoDropDownMenuExpanded = !isSidoDropDownMenuExpanded
+                onItemClick(cityData.sigungu_li)
+            }) {
+                Text(text = cityData.sido_nm)
+            }
+        }
+    }
+}
+
+@Composable
+fun SigunguDropDownMenu(sigunguList: List<SigunguLi> = emptyList(),
+                        sigunguSelectModel:SigunguLi? = null,
+                        onSigunguSelecter:(SigunguLi) -> Unit = {}) {
+    var isSigunguDropDownMenuExpanded by remember { mutableStateOf(false) }
+    Button(
+        onClick = { isSigunguDropDownMenuExpanded = !isSigunguDropDownMenuExpanded },
+    ) {
+        Text(text = sigunguSelectModel?.sigungu_nm ?: "시/군/구" )
+    }
+
+    DropdownMenu(
+        modifier = Modifier.wrapContentSize(),
+        expanded = isSigunguDropDownMenuExpanded,
+        onDismissRequest = { isSigunguDropDownMenuExpanded = false }) {
+
+        sigunguList.forEach { sigunguLi ->
+            DropdownMenuItem(onClick = {
+                println("Test = ${sigunguLi.sigungu_cd}")
+                isSigunguDropDownMenuExpanded = false
+                onSigunguSelecter(sigunguLi)
+            }) {
+                Text(text = sigunguLi.sigungu_nm)
+            }
+        }
+    }
+}
+
+@Composable
+fun TestModelList(models: List<ApartModel>, onItemClick: (Int) -> Unit = {}) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -80,7 +161,7 @@ fun TestModelList(models:List<ApartModel>, onItemClick: (Int) -> Unit = {}) {
 }
 
 @Composable
-fun TestModelListItem(model:ApartModel, onClick: () -> Unit = {}){
+fun TestModelListItem(model: ApartModel, onClick: () -> Unit = {}) {
     Card(
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(1.dp, MaterialTheme.colors.primary),
@@ -96,7 +177,8 @@ fun TestModelListItem(model:ApartModel, onClick: () -> Unit = {}){
     }
 }
 
-@Composable fun ComposableToast(message: String) {
+@Composable
+fun ComposableToast(message: String) {
     Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
 }
 
