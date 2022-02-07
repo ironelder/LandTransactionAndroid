@@ -35,16 +35,23 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
 
     val onItemClickEvent: MutableLiveData<ApartModel> = MutableLiveData()
 
-    fun loadCityData(){
-        val assetManager = context.assets
-        val inputStream = assetManager.open(DEFAULT_PATH_SIDO)
-        val cityData = inputStream.bufferedReader().use { it.readText() }
-        val cityModel = Gson().fromJson(cityData.toString(), CityModel::class.java)
+    init {
+        loadCityData()
+        loadRealApartDealData()
+    }
 
-        cityModel.cityDatas.cityData.let {
-            _sidoListModel.postValue(it)
+    fun loadCityData(){
+        viewModelScope.launch(Dispatchers.IO){
+            val assetManager = context.assets
+            val inputStream = assetManager.open(DEFAULT_PATH_SIDO)
+            val cityData = inputStream.bufferedReader().use { it.readText() }
+            val cityModel = Gson().fromJson(cityData.toString(), CityModel::class.java)
+
+            cityModel.cityDatas.cityData.let {
+                _sidoListModel.postValue(it)
+            }
+            Log.d("ironelderLandTest" , "return cityData = ${cityModel.toString()}")
         }
-        Log.d("ironelderLandTest" , "return cityData = ${cityModel.toString()}")
     }
 
     fun loadRealApartDealData() {

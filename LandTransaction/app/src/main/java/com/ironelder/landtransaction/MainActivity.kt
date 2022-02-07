@@ -66,8 +66,8 @@ class MainActivity : ComponentActivity() {
 //                }
             }
         }
-        viewModel.loadCityData()
-        viewModel.loadRealApartDealData()
+//        viewModel.loadCityData()
+//        viewModel.loadRealApartDealData()
     }
 }
 
