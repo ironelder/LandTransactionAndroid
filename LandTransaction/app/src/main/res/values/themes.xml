@@ -22,4 +22,13 @@
     <style name="Theme.LandTransaction.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.LandTransaction.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="CalenderViewCustom" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <!--day selection color-->
+        <item name="colorAccent">@color/teal_700</item>
+        <!--text color-->
+        <item name="colorOnPrimary">@color/black</item>
+        <!--background color-->
+        <item name="colorSurface">@color/white</item>
+    </style>
 </resources>

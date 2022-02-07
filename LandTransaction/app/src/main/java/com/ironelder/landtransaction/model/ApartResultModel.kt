@@ -6,8 +6,17 @@ data class ApartResultModel(
     val response: Response
 )
 
+data class ApartResultSingleModel(
+    val response: SingleResponse
+)
+
 data class Response(
     val body: Body,
+    val header: Header
+)
+
+data class SingleResponse(
+    val body: SingleBody,
     val header: Header
 )
 
@@ -23,9 +32,21 @@ data class Body(
     val totalCount: String
 )
 
+data class SingleBody(
+    val items: ApartSingleModel,
+    val numOfRows: String,
+    val pageNo: String,
+    val totalCount: String
+)
+
 data class ApartModels(
     @SerializedName("item")
     val ApartModelList: List<ApartModel>
+)
+
+data class ApartSingleModel(
+    @SerializedName("item")
+    val ApartModelSingle: ApartModel
 )
 
 data class ApartModel(

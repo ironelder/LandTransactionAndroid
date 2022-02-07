@@ -15,7 +15,7 @@ interface Api {
     suspend fun getApartRealDealData(
         @Query("serviceKey") serviceKey: String = "q9LoIwTYvighs4U9QBprl+y6AB5mXcK2jpe5QJeuiJGXd0y01eQh+Ri20dCCH4KSUs4dW7OK+6PPEGM6+UMqaQ==",
         @Query("LAWD_CD") landCode: Int = 41173,
-        @Query("DEAL_YMD") dealDate: Int = 202104
+        @Query("DEAL_YMD") dealDate: Int = 202201
     ): String
 }
 

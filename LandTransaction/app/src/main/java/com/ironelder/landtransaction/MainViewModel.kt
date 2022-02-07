@@ -2,19 +2,25 @@ package com.ironelder.landtransaction
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
 import com.google.gson.Gson
-import com.ironelder.landtransaction.model.ApartModel
-import com.ironelder.landtransaction.model.ApartResultModel
+import com.ironelder.landtransaction.model.*
 import com.ironelder.landtransaction.model.city.CityData
 import com.ironelder.landtransaction.model.city.CityModel
 import com.ironelder.landtransaction.model.city.SigunguLi
 import fr.arnaudguyon.xmltojsonlib.XmlToJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 
+@SuppressLint("SimpleDateFormat")
 class MainViewModel(application:Application) : AndroidViewModel(application) {
     @SuppressLint("StaticFieldLeak")
     private val context = getApplication<Application>().applicationContext
@@ -33,11 +39,27 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
     private val _sigunguSelectModel : MutableLiveData<SigunguLi> = MutableLiveData()
     val sigunguSelectModel : LiveData<SigunguLi> = _sigunguSelectModel
 
+    private val _selectedDate : MutableLiveData<String> = MutableLiveData()
+    val selectedDate : LiveData<String> = _selectedDate
+
     val onItemClickEvent: MutableLiveData<ApartModel> = MutableLiveData()
 
+    var cityCode = "11"
+    var citySubCode = "680"
+
     init {
+        val searchSelectedDate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val formatter = DateTimeFormatter.ofPattern("yyyy/MM")
+            LocalDate.now().format(formatter)
+        } else {
+            val pattern = "yyyy/MM"
+            val dateFormat = SimpleDateFormat(pattern)
+            dateFormat.format(Date())
+        }
+        val landCode = cityCode + citySubCode
+        _selectedDate.postValue(searchSelectedDate)
         loadCityData()
-        loadRealApartDealData()
+        loadRealApartDealData(landCode = landCode.toInt(),dealDate = searchSelectedDate.replace("/","").toInt())
     }
 
     fun loadCityData(){
@@ -54,23 +76,41 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loadRealApartDealData() {
+    fun loadRealApartDealData(landCode:Int = 41173, dealDate:Int = 202201) {
         viewModelScope.launch(Dispatchers.IO) {
-            apartRepository.getApartRealDealData().let { result ->
+            apartRepository.getApartRealDealData(
+                landCode = landCode,
+                dealDate = dealDate
+            ).let { result ->
                 val xmlToJson = XmlToJson.Builder(result).build()
-                val apartResultModel = Gson().fromJson(xmlToJson.toJson().toString(), ApartResultModel::class.java)
-                val resultCode = apartResultModel.response.header.resultCode
-                val resultMessage = apartResultModel.response.header.resultMsg
-                Log.d("ironelderLandTest" , "return xmlToJson = ${xmlToJson.toString()}")
-                Log.d("ironelderLandTest" , "return resultCode = ${resultCode.toString()}")
-                Log.d("ironelderLandTest" , "return resultMessage = ${resultMessage.toString()}")
-                Log.d("ironelderLandTest" , "return count = ${apartResultModel.response.body.items.ApartModelList.size}")
+//                Log.d("ironelderLandTest" , "return xmlToJson = ${xmlToJson.toString()}")
+                val resultCode = xmlToJson.toJson()
+                    ?.getJSONObject("response")
+                    ?.getJSONObject("header")
+                    ?.getString("resultCode")
+                val resultTotalCnt = xmlToJson.toJson()
+                    ?.getJSONObject("response")
+                    ?.getJSONObject("body")
+                    ?.getString("totalCount")?.toInt() ?: 0
+
                 when(resultCode) {
                     "00" -> {
-                        _apartRealDealModel.postValue(apartResultModel.response.body.items.ApartModelList)
+                        when(resultTotalCnt) {
+                            0 -> {
+                                _apartRealDealModel.postValue(emptyList())
+                            }
+                            1 -> {
+                                val apartResultModel = Gson().fromJson(xmlToJson.toJson().toString(), ApartResultSingleModel::class.java)
+                                _apartRealDealModel.postValue(arrayListOf(apartResultModel.response.body.items.ApartModelSingle))
+                            }
+                            else -> {
+                                val apartResultModel = Gson().fromJson(xmlToJson.toJson().toString(), ApartResultModel::class.java)
+                                _apartRealDealModel.postValue(apartResultModel.response.body.items.ApartModelList)
+                            }
+                        }
                     }
                     else -> {
-
+                        //Error
                     }
                 }
             }
@@ -81,23 +121,34 @@ class MainViewModel(application:Application) : AndroidViewModel(application) {
         _apartRealDealModel.value?.getOrNull(position)?.let { onItemClickEvent.postValue(it) }
     }
 
-    fun onSidoItemSelect(sigunguList:List<SigunguLi>){
-        _sigunguListModel.postValue(sigunguList)
+    fun onSidoItemSelect(cityData:CityData){
+        cityCode = cityData.sido_cd
+        _sigunguListModel.postValue(cityData.sigungu_li)
     }
 
     fun onSigunguItemSelect(sigunguSelectItem:SigunguLi?) {
+        citySubCode = sigunguSelectItem?.sigungu_cd ?: "680"
         _sigunguSelectModel.postValue(sigunguSelectItem)
+    }
+
+    fun onDateSelected(date:String) {
+        _selectedDate.postValue(date)
+    }
+
+    fun onSearch() {
+        val landCode = cityCode + citySubCode
+        loadRealApartDealData(landCode = landCode.toInt(), dealDate = _selectedDate.value?.replace("/","")?.toInt() ?: 0)
     }
 
 }
 
 interface ApartRepository {
-    suspend fun getApartRealDealData(): String
+    suspend fun getApartRealDealData(landCode:Int, dealDate:Int): String
 }
 
 class ApartRepositoryImpl:ApartRepository {
     private val apiService = NetworkService().getService()
-    override suspend fun getApartRealDealData(): String {
-        return apiService.getApartRealDealData()
+    override suspend fun getApartRealDealData(landCode:Int, dealDate:Int): String {
+        return apiService.getApartRealDealData(landCode = landCode, dealDate = dealDate)
     }
 }

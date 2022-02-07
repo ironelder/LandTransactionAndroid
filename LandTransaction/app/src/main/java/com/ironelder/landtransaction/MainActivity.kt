@@ -1,5 +1,6 @@
 package com.ironelder.landtransaction
 
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -24,6 +25,7 @@ import com.ironelder.landtransaction.model.ApartModel
 import com.ironelder.landtransaction.model.city.CityData
 import com.ironelder.landtransaction.model.city.SigunguLi
 import com.ironelder.landtransaction.ui.theme.LandTransactionTheme
+import java.time.format.DateTimeFormatter
 
 class MainActivity : ComponentActivity() {
     private val viewModel by lazy {
@@ -41,12 +43,13 @@ class MainActivity : ComponentActivity() {
                 val sidoModels = viewModel.sidoListModel.observeAsState().value ?: emptyList()
                 val sigunguModels = viewModel.sigunguListModel.observeAsState().value ?: emptyList()
                 val sigunguSelectModel = viewModel.sigunguSelectModel.observeAsState().value
+                val selectedDateText = viewModel.selectedDate.observeAsState().value
 
                 viewModel.onItemClickEvent.observeAsState().value?.run {
                     ComposableToast(message = apartName)
                 }
                 Column {
-                    FilterDropBox(
+                    TopFilterBar(
                         sidoList = sidoModels,
                         onSelectSido = {
                             viewModel.onSidoItemSelect(it)
@@ -54,7 +57,10 @@ class MainActivity : ComponentActivity() {
                                        },
                         sigunguList = sigunguModels,
                         sigunguSelectModel = sigunguSelectModel,
-                        onSigunguSelecter = { viewModel.onSigunguItemSelect(it) }
+                        onSigunguSelecter = { viewModel.onSigunguItemSelect(it) },
+                        onSearch = { viewModel.onSearch() },
+                        dateButtonText = selectedDateText,
+                        onDateSelected = { viewModel.onDateSelected(it) }
                     )
                     TestModelList(models = apartDealModels, onItemClick = viewModel::onItemClick)
                 }
@@ -72,24 +78,48 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun FilterDropBox(
+fun TopFilterBar(
     sidoList: List<CityData> = emptyList(),
-    onSelectSido: (sigunguList: List<SigunguLi>) -> Unit = {},
+    onSelectSido: (cityData: CityData) -> Unit = {},
     sigunguList: List<SigunguLi> = emptyList(),
     sigunguSelectModel: SigunguLi? = null,
-    onSigunguSelecter: (SigunguLi) -> Unit = {}
+    onSigunguSelecter: (SigunguLi) -> Unit = {},
+    onSearch: () -> Unit = {},
+    dateButtonText:String?,
+    onDateSelected: (date:String) -> Unit = {}
 ) {
+    var dialogShow by remember { mutableStateOf(false) }
     Row(modifier = Modifier.padding(10.dp)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && dialogShow) {
+            DatePicker(onDateSelected = { localDate ->
+                val formatter = DateTimeFormatter.ofPattern("yyyy/MM")
+                println("onDateSelected = ${localDate.format(formatter)}")
+                onDateSelected.invoke(localDate.format(formatter))
+            }, onDismissRequest = {
+                println("onDismissRequest")
+                dialogShow = !dialogShow
+            })
+        }
+        Button(onClick = {
+            dialogShow = !dialogShow
+        }) {
+            Text(text = dateButtonText ?: "Date")
+        }
+        Spacer(modifier = Modifier.width(15.dp))
         SidoDropDownMenu(sidoList = sidoList, onItemClick = onSelectSido)
         Spacer(modifier = Modifier.width(5.dp))
         SigunguDropDownMenu(sigunguList = sigunguList, sigunguSelectModel = sigunguSelectModel, onSigunguSelecter = onSigunguSelecter)
+        Spacer(modifier = Modifier.width(15.dp))
+        Button(onClick = onSearch) {
+            Text(text = "Search")
+        }
     }
 }
 
 @Composable
 fun SidoDropDownMenu(
     sidoList: List<CityData>,
-    onItemClick: (sigunguList: List<SigunguLi>) -> Unit = {}
+    onItemClick: (cityData: CityData) -> Unit = {}
 ) {
     var isSidoDropDownMenuExpanded by remember { mutableStateOf(false) }
     var sidoDropDownText by remember { mutableStateOf("시/도") }
@@ -109,7 +139,7 @@ fun SidoDropDownMenu(
                 println("name = ${cityData.sido_cd}")
                 sidoDropDownText = cityData.sido_nm
                 isSidoDropDownMenuExpanded = !isSidoDropDownMenuExpanded
-                onItemClick.invoke(cityData.sigungu_li)
+                onItemClick.invoke(cityData)
             }) {
                 Text(text = cityData.sido_nm)
             }
