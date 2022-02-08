@@ -104,7 +104,7 @@ fun TopFilterBar(
         crossAxisAlignment = FlowCrossAxisAlignment.Center,
         crossAxisSpacing = 2.dp
     ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && dialogShow) {
+        if (dialogShow) {
             DatePicker(
                 onDateSelected = { localDate ->
                     val formatter = DateTimeFormatter.ofPattern("yyyy/MM")

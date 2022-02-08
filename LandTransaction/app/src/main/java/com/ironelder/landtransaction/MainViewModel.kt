@@ -4,10 +4,14 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.ironelder.landtransaction.model.*
+import com.ironelder.landtransaction.model.ApartModel
+import com.ironelder.landtransaction.model.ApartResultModel
+import com.ironelder.landtransaction.model.ApartResultSingleModel
 import com.ironelder.landtransaction.model.city.CityData
 import com.ironelder.landtransaction.model.city.CityModel
 import com.ironelder.landtransaction.model.city.SigunguLi
