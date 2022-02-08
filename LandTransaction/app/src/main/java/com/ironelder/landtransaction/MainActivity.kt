@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,10 +25,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
+import com.google.accompanist.flowlayout.FlowMainAxisAlignment
+import com.google.accompanist.flowlayout.FlowRow
 import com.ironelder.landtransaction.model.ApartModel
 import com.ironelder.landtransaction.model.city.CityData
 import com.ironelder.landtransaction.model.city.SigunguLi
 import com.ironelder.landtransaction.ui.theme.LandTransactionTheme
+import com.ironelder.landtransaction.ui.theme.Purple500
 import java.time.format.DateTimeFormatter
 
 class MainActivity : ComponentActivity() {
@@ -94,23 +97,34 @@ fun TopFilterBar(
     onDateSelected: (date:String) -> Unit = {}
 ) {
     var dialogShow by remember { mutableStateOf(false) }
-    Row(modifier = Modifier
-        .padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically
+    FlowRow(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 2.dp, end = 2.dp),
+        mainAxisAlignment = FlowMainAxisAlignment.Start,
+        crossAxisAlignment = FlowCrossAxisAlignment.Center,
+        crossAxisSpacing = 2.dp
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && dialogShow) {
-            DatePicker(onDateSelected = { localDate ->
-                val formatter = DateTimeFormatter.ofPattern("yyyy/MM")
-                println("onDateSelected = ${localDate.format(formatter)}")
-                onDateSelected.invoke(localDate.format(formatter))
-            }, onDismissRequest = {
-                println("onDismissRequest")
-                dialogShow = !dialogShow
-            })
+            DatePicker(
+                onDateSelected = { localDate ->
+                    val formatter = DateTimeFormatter.ofPattern("yyyy/MM")
+                    println("onDateSelected = ${localDate.format(formatter)}")
+                    onDateSelected.invoke(localDate.format(formatter))
+                },
+                onDismissRequest = {
+                    println("onDismissRequest")
+                    dialogShow = !dialogShow
+                }
+            )
         }
-        Button(onClick = {
-            dialogShow = !dialogShow
-        }) {
+        Button(
+            onClick = {
+                dialogShow = !dialogShow
+            },
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(start = 2.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)
+        ){
             Text(text = dateButtonText ?: "Date")
         }
         Spacer(modifier = Modifier.width(5.dp))
@@ -121,14 +135,15 @@ fun TopFilterBar(
         IconButton(
             onClick = onSearch,
             modifier = Modifier
-                .border(1.dp, Color.White, shape = CircleShape)
+                .border(1.dp, Purple500, shape = CircleShape)
                 .width(30.dp)
                 .height(30.dp)
+                .padding(start = 2.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)
         ) {
             Icon(
                 Icons.Filled.Search,
                 "",
-                tint = Color.White,
+                tint = Purple500
             )
         }
     }
@@ -142,7 +157,10 @@ fun SidoDropDownMenu(
     var isSidoDropDownMenuExpanded by remember { mutableStateOf(false) }
     var sidoDropDownText by remember { mutableStateOf("시/도") }
     Button(
-        onClick = { isSidoDropDownMenuExpanded = !isSidoDropDownMenuExpanded }
+        onClick = { isSidoDropDownMenuExpanded = !isSidoDropDownMenuExpanded },
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(start = 2.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)
     ) {
         Text(text = sidoDropDownText)
     }
@@ -172,6 +190,9 @@ fun SigunguDropDownMenu(sigunguList: List<SigunguLi> = emptyList(),
     var isSigunguDropDownMenuExpanded by remember { mutableStateOf(false) }
     Button(
         onClick = { isSigunguDropDownMenuExpanded = !isSigunguDropDownMenuExpanded },
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(start = 2.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)
     ) {
         Text(text = sigunguSelectModel?.sigungu_nm ?: "시/군/구" )
     }
